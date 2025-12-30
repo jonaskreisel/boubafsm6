@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bouba FSM | Moderní Pastafariánství</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Montserrat:wght@300;400;600;800&family=Satisfy&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- BAREVNÁ PALETA A PROMĚNNÉ --- */
+        :root {
+            --c-red: #D72638;         /* Výrazná marinara červená */
+            --c-red-dark: #A01D2A;
+            --c-yellow: #FFC857;      /* Sytá vaječná žlutá/pivní */
+            --c-beige: #FDF6E3;       /* Jemná krémová */
+            --c-text: #2E294E;        /* Tmavá modrofialová pro text (moderní kontrast) */
+            --c-white: #FFFFFF;
+            
+            --f-title: 'Abril Fatface', serif; /* Exotické, tučné nadpisy */
+            --f-body: 'Montserrat', sans-serif; /* Čitelné moderní písmo */
+            --f-hand: 'Satisfy', cursive;       /* Pro "podpisy" a poznámky */
+            
+            --sidebar-width: 280px;
+        }
+
+        /* --- RESET A ZÁKLAD --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        html { scroll-behavior: smooth; }
+        
+        body {
+            font-family: var(--f-body);
+            color: var(--c-text);
+            background-color: var(--c-beige);
+            line-height: 1.7;
+            background-image: radial-gradient(#e0dcc5 1px, transparent 1px);
+            background-size: 20px 20px; /* Jemná textura */
+        }
+
+        /* --- ROZLOŽENÍ STRÁNKY (GRID) --- */
+        .app-layout {
+            display: grid;
+            grid-template-columns: var(--sidebar-width) 1fr;
+            min-height: 100vh;
+        }
+
+        /* --- SIDEBAR NAVIGACE (LEVÁ ČÁST) --- */
+        .sidebar {
+            background-color: var(--c-red);
+            color: var(--c-white);
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+
+        .logo-area {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-icon {
+            font-size: 3rem;
+            color: var(--c-yellow);
+            margin-bottom: 0.5rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .logo-text {
+            font-family: var(--f-title);
+            font-size: 2rem;
+            line-height: 1;
+        }
+
+        .logo-sub {
+            font-family: var(--f-hand);
+            color: var(--c-yellow);
+            font-size: 1.1rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+            flex-grow: 1;
+        }
+
+        .nav-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: rgba(255,255,255,0.7);
+            font-weight: 600;
+            display: block;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-menu a:hover, .nav-menu a.active {
+            background-color: var(--c-white);
+            color: var(--c-red);
+            transform: translateX(5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Mobilní toggler */
+        .mobile-header {
+            display: none;
+            background: var(--c-red);
+            padding: 1rem;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .mobile-logo { color: white; font-family: var(--f-title); font-size: 1.5rem; }
+        .hamburger { color: white; font-size: 1.5rem; cursor: pointer; }
+
+        /* --- HLAVNÍ OBSAH (PRAVÁ ČÁST) --- */
+        .main-content {
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Hero Sekce */
+        .hero {
+            height: 80vh;
+            background: linear-gradient(rgba(46, 41, 78, 0.7), rgba(215, 38, 56, 0.7)), url('https://images.unsplash.com/photo-1516100882582-96c3a05fe590?q=80&w=1920&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            padding: 2rem;
+            margin-bottom: 4rem;
+            border-bottom-left-radius: 50px; /* Moderní tvar */
+            border-bottom-right-radius: 0;
+        }
+
+        .hero-content h1 {
+            font-family: var(--f-title);
+            font-size: 5rem;
+            color: var(--c-yellow);
+            text-shadow: 4px 4px 0px var(--c-red);
+            margin-bottom: 1rem;
+        }
+
+        .hero-content p {
+            font-size: 1.4rem;
+            max-width: 700px;
+            margin: 0 auto;
+            font-weight: 300;
+        }
+
+        /* Styl obsahu */
+        section {
+            max-width: 900px;
+            margin: 0 auto 6rem auto;
+            padding: 0 2rem;
+            opacity: 0; /* Pro animaci */
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h2 {
+            font-family: var(--f-title);
+            font-size: 3rem;
+            color: var(--c-red);
+            margin-bottom: 1.5rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        h2::before {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background-color: var(--c-yellow);
+            opacity: 0.4;
+            z-index: -1;
+            transform: skewX(-20deg);
+        }
+
+        h3 {
+            font-family: var(--f-body);
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--c-text);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            color: #444;
+        }
+
+        /* --- KOMPONENTY --- */
+        
+        /* Moderní karty */
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 2rem;
+        }
+
+        .modern-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border-bottom: 5px solid var(--c-yellow);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+
+        .modern-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .card-number {
+            font-family: var(--f-title);
+            font-size: 3rem;
+            color: rgba(0,0,0,0.05);
+            position: absolute;
+            top: 10px;
+            right: 20px;
+        }
+        
+        .card-icon-large {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Zvýrazněný text (Blockquote) */
+        .exotic-quote {
+            background-color: var(--c-white);
+            border-left: 8px solid var(--c-red);
+            padding: 2rem;
+            font-family: var(--f-hand);
+            font-size: 1.6rem;
+            color: var(--c-red-dark);
+            box-shadow: 5px 5px 20px rgba(0,0,0,0.05);
+            margin: 2rem 0;
+            border-radius: 0 20px 20px 0;
+        }
+
+        /* Vlnovka (oddělovač) */
+        .noodle-divider {
+            height: 30px;
+            background-image: url("data:image/svg+xml,%3Csvg width='40' height='12' viewBox='0 0 40 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 6c2.5 0 2.5-4 5-4s2.5 4 5 4 2.5-4 5-4 2.5 4 5 4 2.5-4 5-4 2.5 4 5 4 2.5-4 5-4 2.5 4 5 4v2c-2.5 0-2.5 4-5 4s-2.5-4-5-4-2.5 4-5 4-2.5-4-5-4-2.5 4-5 4-2.5-4-5-4-2.5 4-5 4-2.5-4-5-4-2.5 4-5 4z' fill='%23FFC857' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            width: 100%;
+            margin: 3rem 0;
+            opacity: 0.6;
+        }
+
+        /* Pirátská sekce - Dark Mode */
+        .pirate-section {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 4rem;
+            border-radius: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        .pirate-section h2, .pirate-section h3 { color: var(--c-yellow); }
+        .pirate-section p { color: #bdc3c7; }
+        .pirate-section::after {
+            content: '\f6e3'; /* Kotva */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            font-size: 15rem;
+            position: absolute;
+            right: -2rem;
+            bottom: -2rem;
+            opacity: 0.1;
+            color: white;
+            transform: rotate(-20deg);
+        }
+        
+        /* Video Container */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 3px solid var(--c-yellow);
+            margin-bottom: 2rem;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Letáčky Grid */
+        .leaflet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 25px;
+            margin-top: 2rem;
+        }
+
+        .leaflet-item {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 2px solid var(--c-yellow);
+            background: white;
+            aspect-ratio: 2/3; /* Standardní poměr letáku */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .leaflet-item:hover {
+            transform: scale(1.05) translateY(-5px);
+            z-index: 10;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            border-color: var(--c-red);
+        }
+
+        .leaflet-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* FAQ Accordion - NOVÉ */
+        .faq-item {
+            margin-bottom: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow: hidden;
+            border-left: 5px solid var(--c-yellow);
+        }
+
+        .faq-item[open] {
+            border-left-color: var(--c-red);
+        }
+
+        .faq-summary {
+            padding: 15px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            list-style: none; /* Skryje defaultní trojúhelník */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: white;
+            transition: background-color 0.3s;
+        }
+
+        .faq-summary:hover {
+            background-color: var(--c-beige);
+        }
+
+        .faq-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .faq-summary::after {
+            content: '+';
+            color: var(--c-red);
+            font-weight: 900;
+            font-size: 1.2rem;
+            transition: transform 0.3s;
+        }
+
+        .faq-item[open] .faq-summary::after {
+            content: '-';
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            padding: 0 20px 20px 20px;
+            color: #555;
+            background-color: white;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* Footer */
+        .footer-simple {
+            text-align: center;
+            padding: 3rem;
+            color: #888;
+            font-size: 0.9rem;
+            background: #fff;
+            border-top: 1px solid #eee;
+        }
+
+        /* Animace plavání loga */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        /* --- RESPONZIVITA --- */
+        @media (max-width: 900px) {
+            .app-layout { grid-template-columns: 1fr; }
+            .sidebar { 
+                display: none; /* Skryjeme sidebar na mobilu */
+                position: fixed;
+                width: 100%;
+                top: 60px;
+                height: auto;
+                padding-top: 1rem;
+            }
+            
+            .sidebar.active {
+                display: flex;
+            }
+
+            .mobile-header { display: flex; }
+            
+            .hero { margin-top: 60px; height: 60vh; border-radius: 0; }
+            .hero-content h1 { font-size: 3rem; }
+            section { padding: 0 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-header">
+        <div class="mobile-logo"><i class="fa-solid fa-spaghetti-monster-flying"></i> Bouba FSM</div>
+        <div class="hamburger" onclick="toggleMenu()"><i class="fa-solid fa-bars"></i></div>
+    </div>
+
+    <div class="app-layout">
+        
+        <aside class="sidebar" id="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fa-solid fa-spaghetti-monster-flying"></i></div>
+                <div class="logo-text">Bouba FSM</div>
+                <div class="logo-sub">Est. 2005 (cca)</div>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#uvod" class="nav-link active">Úvod</a></li>
+                <li><a href="#dogma" class="nav-link">Jediné Dogma</a></li>
+                <li><a href="#fsm" class="nav-link">O Quobovi</a></li>
+                <li><a href="#stvoreni" class="nav-link">Stvoření</a></li>
+                <li><a href="#bobby" class="nav-link">Prorok Bobby</a></li>
+                <li><a href="#texty" class="nav-link">Svaté Texty</a></li> 
+                <li><a href="#zjeveni" class="nav-link">FSM Zjevení</a></li>
+                <li><a href="#vyhody" class="nav-link">Výhody FSM</a></li>
+                <li><a href="#letacky" class="nav-link">Letáčky</a></li> 
+                <li><a href="#svaty-patek" class="nav-link">Svatý Pátek</a></li>
+                <li><a href="#pirati" class="nav-link">Božští Piráti</a></li>
+                <li><a href="#pravidla" class="nav-link">8 "Raději bych"</a></li>
+                <li><a href="#svatky" class="nav-link">Svátky</a></li>
+                <li><a href="#historie" class="nav-link">Pravá Historie</a></li>
+                <li><a href="#faq" class="nav-link">FAQ</a></li> <li><a href="#clenstvi" class="nav-link">Přidej se</a></li>
+<li><a href="#weby" class="nav-link">Webové stránky</a></li>
+
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            
+            <section id="uvod" class="hero">
+                <div class="hero-content">
+                    <h1>Bouba FSM</h1>
+                    <p>Bezpečný přístav pro ty, které se dotklo Nudlovité Chapadlo. Vítejte ve světě, kde je omáčka marinara odpovědí na vše.</p>
+                </div>
+            </section>
+
+            <section>
+                <h2>Vítejte, poutníci</h2>
+                <p class="lead">Vítejte, drazí poutníci a hledající duše, na tomto posvátném digitálním prahu společenství Bouba FSM.</p>
+                <p>Toto místo slouží jako bezpečný přístav a maják pro všechny, kteří ve svém nitru pocítili onen nezaměnitelný, jemný a hřejivý dotek Jeho Nudlovitého Chapadla. Možná se vám zdá, že jste sem zabloudili čistě náhodou v chaosu internetových vln, ale my věříme, že v tomto vesmíru stvořeném po jednom božském večírku náhody neexistují.</p>
+                <div class="exotic-quote">
+                    "Svět, kde je nejvyšší ctností prostá laskavost, ochrana oceánů a dobrá nálada."
+                </div>
+                <p>Létající špagetová příšera (FSM) pro nás není mýtem. Je to živoucí sacharidová podstata. Naše cesta Bouba FSM je cestou autentické svobody, smíchu a respektu. Nebereme se příliš vážně, ale naše přesvědčení myslíme upřímně.</p>
+            </section>
+
+            <div class="noodle-divider"></div>
+
+            <section id="dogma">
+                <h2>Jediné dogma</h2>
+                <p>​Drazí bratři, sestry a všichni hladoví hledající v tomto vyprahlém světě!</p>
+                <p>​Cítíte se svázáni řetězy přísných pravidel? Máte pocit, že vám tradiční víry diktují, co si myslet, koho milovat a jak se oblékat, zatímco vy jen toužíte po klidu a plném talíři? Odhoďte ty těžké, zaprášené knihy a pohlédněte vzhůru k nebesům, odkud se na nás s láskou dívá Létající špagetové monstrum!</p>
+                <p>​My, hrdí pastafariáni, vám nenabízíme strach z pekla ani seznamy zákazů dlouhé jako špageta před vařením. Nabízíme vám svobodu, která je stejně lahodná jako čerstvá omáčka marinara. Naše víra stojí na pevném, i když kluzkém základě, a jejím středobodem je jedna velká, uvolňující pravda. Naslouchejte pozorně, neboť toto je to nejdůležitější (a jediné) pravidlo:</p>
+                
+                <div class="exotic-quote">
+                    Jediným dogmatem je odmítnutí dogmat.
+                </div>
+
+                <p>​Co to znamená? Znamená to, že nic není vytesáno do kamene. Kámen je totiž tvrdý a nestravitelný, zatímco my usilujeme o pružnost dobře uvařené těstoviny. Odmítáme slepou poslušnost a fanatismus. Náš Stvořitel, jenž byl při tvorbě vesmíru pravděpodobně mírně pod vlivem piva, po nás nechce, abychom vypnuli mozek. Naopak! Chce, abychom pochybovali, ptali se a nebrali se příliš vážně.</p>
+                <p>​Nevěřte ničemu jen proto, že to říkáme my. Věřte tomu, co vám dává smysl a co činí svět snesitelnějším místem. A pokud vám to smysl nedává, dejte si raději boloňské špagety. V našem nebi na vás čeká pivní sopka, ale vstupenkou není slepá víra, nýbrž otevřená mysl.</p>
+            </section>
+            
+            <div class="noodle-divider"></div>
+
+            <section id="fsm">
+                <h2>Quob: Naše podstata</h2>
+                <p>V srdci naší víry stojí Quob – Létající špagetová příšera. Bytost všemocná, vševědoucí a hlavně – všeopilá. Vesmír byl stvořen v opilosti, což vysvětluje jeho nedokonalost a chaos. A to je dobře.</p>
+                
+                <h3>Důkazy existence</h3>
+                <div class="card-container">
+                    <div class="modern-card">
+                        <i class="fa-solid fa-dna fa-2x" style="color:var(--c-red)"></i>
+                        <h3>DNA</h3>
+                        <p>Dvojitá šroubovice DNA má jasný tvar těstovin fusilli. Náhoda? Nemyslíme si.</p>
+                    </div>
+                    <div class="modern-card">
+                        <i class="fa-solid fa-globe fa-2x" style="color:var(--c-yellow)"></i>
+                        <h3>Chaotický řád</h3>
+                        <p>Pohyby planet a nepředvídatelnost života odráží "cik-cak" pohyb Quoba.</p>
+                    </div>
+                    <div class="modern-card">
+                        <i class="fa-solid fa-tornado fa-2x" style="color:var(--c-text)"></i>
+                        <h3>Přírodní síly</h3>
+                        <p>Tornádo? To je jen projev Jeho nudlového přívěšku, kterým se dotýká země.</p>
+                    </div>
+                    <div class="modern-card">
+                        <i class="fa-solid fa-brain fa-2x" style="color:var(--c-red)"></i>
+                        <h3>Nervová soustava</h3>
+                        <p>Lidská nervová soustava vypadá jako FSM. Centrální shluk (mozek) a miliony spletitých nudlovitých vláken (nervy). Jsme stvořeni k Jeho obrazu.</p>
+                    </div>
+                    <div class="modern-card">
+                        <i class="fa-solid fa-eye fa-2x" style="color:var(--c-yellow)"></i>
+                        <h3>Oči jako kuličky</h3>
+                        <p>Naše oči jsou dokonale kulaté, přesně jako božské masové kuličky. Skrze ně nám Quob umožňuje vidět krásu světa a poznat pravou omáčku.</p>
+                    </div>
+                    <div class="modern-card">
+                        <i class="fa-solid fa-droplet fa-2x" style="color:var(--c-red)"></i>
+                        <h3>Krev je omáčka</h3>
+                        <p>Životodárná tekutina v nás je červená a hustá. Není to voda, je to marinara. Krevní oběh je důkazem, že nás pohání Jeho podstata.</p>
+                    </div>
+                    <div class="modern-card">
+                        <i class="fa-solid fa-bacterium fa-2x" style="color:var(--c-text)"></i>
+                        <h3>Bakterie a bičíky</h3>
+                        <p>I v mikrosvětě je Jeho podpis. Bakterie s bičíky vypadají jako miniaturní verze Noodly Appendage. Jeho dotek je skutečně všudypřítomný.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="stvoreni">
+                <h2>Stvoření vesmíru</h2>
+                <p>Na počátku nebylo nic. Jen On. A jelikož nekonečno byla nuda, začal tvořit. Stvoření nebylo precizní inženýrství, ale bujarý večírek.</p>
+                <p><strong>Kosmogonie Kocoviny:</strong> Vše, co vnímáme jako "chyby" (komáři, nemoci, pondělí), jsou důsledky toho, že se Stvořiteli trochu třásla ruka. Nejsou to tresty. Jsou to božské "nedodělky".</p>
+                <div class="exotic-quote">"Jsme dětmi chaosu, zrozeni z božské kocoviny."</div>
+            </section>
+
+            <div class="noodle-divider"></div>
+
+            <section id="bobby">
+                <div style="display: flex; gap: 2rem; flex-wrap: wrap; align-items: center;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <h2>Prorok Bobby</h2>
+                        <p>V roce 2005 byl vyvolen fyzik Bobby Henderson. V Kansasu, uprostřed debat o evoluci, obdržel Zjevení. Sepsal Otevřený dopis, který se stal základem našeho Evangelia.</p>
+                        <p>Bobby nás naučil, že víra a věda mohou koexistovat, pokud přijmeme absurditu. Jeho odvaha nám dala hlas.</p>
+                        <h3>Evangelium FSM</h3>
+                        <p>Svatá kniha plná moudrosti, ale i přiznaných chyb (protože inspirace přišla v opilosti). Učí nás inkluzi, odmítá placení desátků a zavádí svátek Holiday.</p>
+                    </div>
+                    <div style="flex: 1; min-width: 300px;">
+                        <img src="https://images.unsplash.com/photo-1595475207225-428b62bda831?q=80&w=800&auto=format&fit=crop" alt="Holy Book Art" style="width: 100%; border-radius: 20px; box-shadow: 10px 10px 0 var(--c-yellow);">
+                    </div>
+                </div>
+            </section>
+
+            <section id="texty">
+                <h2>Svaté texty</h2>
+                <p>Pro ty, kteří chtějí jít do hloubky (nebo jen hledají dobré čtení na toaletu), nabízíme naše posvátné spisy v digitální podobě.</p>
+                <div class="card-container">
+                    <a href="https://observationofalostsoul.wordpress.com/wp-content/uploads/2011/05/the-gospel-of-the-flying-spaghetti-monster.pdf" target="_blank" style="text-decoration: none; color: inherit;">
+                        <div class="modern-card">
+                            <div class="card-icon-large" style="color: var(--c-red);">
+                                <i class="fa-solid fa-book-open"></i>
+                            </div>
+                            <h3 style="margin-top: 0; text-align: center;">Evangelium FSM</h3>
+                            <p style="text-align: center;">The Gospel of the Flying Spaghetti Monster. Původní zjevení.</p>
+                            <p style="text-align: center; color: var(--c-red); font-weight: bold;">Stáhnout PDF <i class="fa-solid fa-download"></i></p>
+                        </div>
+                    </a>
+
+                    <a href="https://www.loose-canon.info/Loose-Canon-1st-Ed.pdf" target="_blank" style="text-decoration: none; color: inherit;">
+                        <div class="modern-card">
+                            <div class="card-icon-large" style="color: var(--c-yellow);">
+                                <i class="fa-solid fa-scroll"></i>
+                            </div>
+                            <h3 style="margin-top: 0; text-align: center;">Loose Canon</h3>
+                            <p style="text-align: center;">Svatá kniha pastafariánství. Sbírka textů a moudrostí.</p>
+                            <p style="text-align: center; color: var(--c-red); font-weight: bold;">Stáhnout PDF <i class="fa-solid fa-download"></i></p>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+<div class="noodle-divider"></div>
+
+<section id="evangelium-uryvky">
+    <h2>Úryvky z Evangelia</h2>
+
+    <div class="exotic-quote">
+        Dnešní doba je ve svatosti vzrušující - politici vedou křížové výpravy, národy se vrhají do invaze a věda slábne. S těmito změnami přicházejí náboženské příležitosti, jaké tu nebyly od dob reformace... nebo přinejmenším od doby, kdy se pronásledované masy poprvé shromáždily a odjely na to velké demokratické setkání probuzení, které nazýváme Spojené státy americké.
+    </div>
+
+    <p><strong>VĚDA JE V KRIZI.</strong> Existuje malé špinavé tajemství, které se vědecký establishment snaží už léta udržet pod pokličkou: Existuje mnoho neprokázaných teorií, které jsou lidem předávány, jako by to byla ověřená fakta. Ale díky hrdinskému úsilí hrstky hlubokomyslných lidí se vítr pravdy přehnal přes celou zemi.</p>
+
+    <p>Co když je to On, kdo nás tlačí dolů svými tělesnými přívěsky, kdo způsobuje tuto sílu? Nezapomeňte, že je neviditelný a současnými přístroji nezjistitelný, takže teoreticky je to možné. A skutečnost, že gravitační síla Špagetového monstra nebyla vyvrácena, to činí ještě pravděpodobnějším. O jeho motivech se můžeme jen dohadovat, ale je logické předpokládat, že pokud si dává takovou práci, má k tomu dobrý důvod. Může to být třeba to, že nechce, abychom odletěli ze Země do vesmíru, nebo možná jen to, že se nás rád dotýká - to se možná nikdy nedozvíme.</p>
+
+    <p>Pravdou je, že FSM se skrývá všude kolem nás. A zanechal nám stopy jako drobky chleba v italském stylu, aby nám ukázal cestu ke své věčné Nudnosti. Je v našem jazyce - pokaždé, když vám někdo řekne, abyste použili "nudli", nevědomky vás nasměruje k tomu, abyste se obrátili k Němu pro vedení. A kdykoli někdo mluví o "spiknutí", jen se dovolává zlomyslné povahy Jeho a Jeho vyvoleného lidu, Pirátů</p>
+
+    <p>Než Létající špagetové monstrum stvořilo život, muselo nejprve vytvořit elementární částice, z nichž se nakonec skládá veškerá hmota, jak ji známe. To byl velmi složitý proces, ale my jsme vyvinuli mnohem jednodušší metodu, kterou si můžete vyzkoušet doma. Nejprve si vezměte kousek subatomárního "provázku", což je přirozeně jen neuvěřitelně malé vlákno mokrých špaget, tak malé, že ho nelze spatřit ani tím nejsilnějším mikroskopem.</p>
+
+    <p><strong>Před pěti tisíci lety:</strong> Začátek Létající špagetové monstrum stvořilo vesmír a spoustu planet včetně Země. Nikdo kromě Kromě něj samotného to nikdo neviděl, ale máme podezření, že to bylo spíše kvůli tomu. nudné. Počáteční stvoření samozřejmě muselo být velkolepé, ale pak strávil dalších deset až sto let pečlivou přípravou vesmíru, aby vypadal starší, než ve skutečnosti je. Na cestu k Zemi byly jednotlivě umisťovány fotony, údajně vyzařované před miliony let z hvězd po celé galaxii. Ve skutečnosti víme, že každý foton byl božsky umístěn a vhodně červeně posunut1 , aby se vesmír zdál být starý miliardy let. Jeho maskovací metody nacházíme v činnosti i dnes; pokaždé, když vědci objeví zdánlivé důkazy o tom, že vesmír je starý miliardy let, můžeme si být jisti, že jde jen o další důmyslnou přípravu, kterou zavedl.</p>
+
+    <div class="exotic-quote">
+        FSM byl unavený z létání a nemohl dlouho šlapat po vodě, a tak řekl: "Ať je uprostřed vod pevnina a ať pevnina tvoří zátoky, aby jednoho dne poskytla bezpečný přístav Pirátům - ne, počkat, pevnina je hloupé slovo; ať se jmenuje země, protože "pevnina-ho!" zní ještě hloupěji než prostá pevnina - a ať tato země odděluje vody od vod. A ať je tam sopka, která bude chrlit pivo, což mi připadá jako blahodárný nápad." A sopka chrlila pivo a On ho ochutnal a prohlásil, že je docela dobré. A tak byl večer a ráno druhý den.
+    </div>
+
+    <p>Ten trpaslík byl ale zatraceně hlučný. FSM se nemohl vypořádat se všemi těmi stížnostmi dole na Zemi, a tak Pán FSM přikázal trpaslíkovi: "Mám nápad... proč neseženeš krupici, rýži a kdovíco ještě a nevyrobíš těstoviny k mému obrazu. Od toho to tu je. A naplň si jimi ústa a buď tichý a klidný. Ale s olivovníkem buď opatrný, protože oliva sama o sobě je dobrá, ale jáma uvnitř je tvrdá jako kámen a mohl by ses jí udusit nebo si zlomit zub, takže bys ji měl považovat za zlo; když se jí udusíš, určitě zemřeš, což by znamenalo, že jsem s tebou promarnil sakra hodně času, i když už teď si to rozmýšlím."</p>
+
+    <p>Pak FSM viděl, že zloba člověka na zemi je veliká a že každou myšlenku malého trpaslíka ovládá jeho žaludek. Pak si FSM řekl: "Fajn, uvařím si sám," a vyrobil velký cedník Dobroty a skutečně nabral vodu do obrovského hrnce, který ohřál; a skutečně do něj vhodil pořádnou porci těstovin a pomalu vařil omáčku tak dlouho, že původní lidé už ani nebyli poblíž, když byl konečně připraven k jídlu. A špagety i s vodou nalil do cedníku Dobroty, přičemž dával pozor, aby voda odtekla do odtoku Jeho dřezu. A jak tak jedl, bezděčně uvažoval, kam se odtok skutečně vyprázdnil, a FSM řekl: "Uf, aha." A tak se stalo.</p>
+
+    <p>Mosey skutečně vařil mizerný papiňák a s fritézou byl umělec, ale dlouhá pracovní doba a špatné zacházení ho unavovaly a jednoho dne vešel do kanceláře svého manažera, odhodil zástěru a řekl: "Už mě nebaví pracovat od devíti do pěti. Dávám výpověď a stanu se Pirátem."</p>
+
+    <p><strong>VÍTE, ŽE VÍTE</strong> něco o vědě a historii pastafariánství, a možná máte pocit, že jste připraveni jít ven a šířit jeho slovo. S tímto vědomím je důležité, abyste se si pamatovali na to, že jednou z ústředních myšlenek FSMismu je myšlenka inkluze. Členem může být kdokoli, bez ohledu na věk, rasu, původ nebo dokonce náboženskou příslušnost. Jak jsme již uvedli dříve, nezakládáme své přesvědčení na dogmatech - kdybychom tak činili, museli bychom si myslet, že máme ve všem naprostou pravdu. Takto uvažují jen pitomci. A pastafariáni nejsou kreténi.</p>
+
+    <p>Pro pastafariány na celém světě je smutnou skutečností, že pirátství je na ústupu. To se nelíbí našemu Noodlymu Pánu, Létajícímu špagetovému monstru, a ten dává najevo svou nespokojenost tím, že nás zasypává dalšími a dalšími přírodními katastrofami. Jen tento rok ukázal, jak moc jsme na sebe přivolali jeho hněv, od tsunami, hurikánů a zemětřesení, nemluvě o stále znepokojivém dilematu globálního oteplování. Těm, kdo se ve FSM dobře neorientují, však musí připadat jako záhada, proč si náš milosrdný a velký Noodly Pán vybral za své pastýře právě Piráty.</p>
+</section>
+            
+            <section id="zjeveni">
+                <h2>FSM Zjevení</h2>
+                <p class="lead">Není nic přesvědčivějšího než vidět Jeho Nudlovitost na vlastní oči (nebo alespoň na videu). Zde jsou zaznamenaná zjevení:</p>
+                
+                <div class="video-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <div>
+                         <div class="video-container">
+                            <iframe src="https://www.youtube.com/embed/vL7FcvEydqg" title="FSM Sighting 1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        </div>
+                        <p style="text-align: center; font-size: 0.9rem;">Božský dotek v přímém přenosu.</p>
+                    </div>
+
+                    <div>
+                        <div class="video-container">
+                            <iframe src="https://www.youtube.com/embed/Z_QtESijiNU" title="FSM Sighting 2" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        </div>
+                        <p style="text-align: center; font-size: 0.9rem;">Jasný důkaz o existenci.</p>
+                    </div>
+
+                    <div>
+                        <div class="video-container">
+                            <iframe src="https://www.youtube.com/embed/gZJUEu5omp8" title="FSM Sighting 3" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        </div>
+                        <p style="text-align: center; font-size: 0.9rem;">Zjevení, které otřáslo světem.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="vyhody">
+                <h2>Výhody FSM</h2>
+                <p class="lead">Proč se k nám přidat? Protože naše benefity jsou prostě lepší.</p>
+                <div class="card-container">
+                    <div class="modern-card">
+                        <div class="card-icon-large" style="color: var(--c-red);">
+                            <i class="fa-solid fa-calendar-check"></i>
+                        </div>
+                        <h3 style="margin-top: 0; text-align: center;">Svátek každý pátek</h3>
+                        <p style="text-align: center;">Každý pátek je náboženský svátek.</p>
+                    </div>
+                    <div class="modern-card">
+                        <div class="card-icon-large" style="color: var(--c-yellow);">
+                            <i class="fa-solid fa-ban"></i> <i class="fa-solid fa-dollar-sign"></i>
+                        </div>
+                        <h3 style="margin-top: 0; text-align: center;">Bez poplatků</h3>
+                        <p style="text-align: center;">Žádné desátky, jen radost.</p>
+                    </div>
+                    <div class="modern-card">
+                        <div class="card-icon-large" style="color: var(--c-red);">
+                            <i class="fa-solid fa-beer-mug-empty"></i>
+                        </div>
+                        <h3 style="margin-top: 0; text-align: center;">Pivní sopka</h3>
+                        <p style="text-align: center;">Pivní sopka v posmrtném životě.</p>
+                    </div>
+                    <div class="modern-card">
+                        <div class="card-icon-large" style="color: var(--c-text);">
+                            <i class="fa-solid fa-user-ninja"></i>
+                        </div>
+                        <h3 style="margin-top: 0; text-align: center;">Pirátské oděvy</h3>
+                        <p style="text-align: center;">Pirátské oděvy na slavnostních akcích.</p>
+                    </div>
+                    <div class="modern-card" style="grid-column: 1 / -1;">
+                        <div class="card-icon-large" style="color: var(--c-red);">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </div>
+                        <h3 style="margin-top: 0; text-align: center;">30denní zkušební doba</h3>
+                        <p style="text-align: center;">Vyzkoušejte nás na 30 dní v rámci FSM zkušební doby. Pokud se vám to nebude líbit, vaše staré náboženství vás pravděpodobně vezme zpátky.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="letacky">
+                <h2>Letáčky</h2>
+                <p class="lead">Různé pastafariánské propagační materiály.</p>
+                <div class="leaflet-grid">
+                    <div class="leaflet-item">
+                        <img src="1.jpg" alt="Leták 1" onerror="this.src='https://placehold.co/400x600/e63946/white?text=Letak+1';">
+                    </div>
+                    <div class="leaflet-item">
+                        <img src="2.jpg" alt="Leták 2" onerror="this.src='https://placehold.co/400x600/f1c40f/333?text=Letak+2';">
+                    </div>
+                    <div class="leaflet-item">
+                        <img src="3.jpg" alt="Leták 3" onerror="this.src='https://placehold.co/400x600/e63946/white?text=Letak+3';">
+                    </div>
+                    <div class="leaflet-item">
+                        <img src="4.jpg" alt="Leták 4" onerror="this.src='https://placehold.co/400x600/f1c40f/333?text=Letak+4';">
+                    </div>
+                    <div class="leaflet-item">
+                        <img src="5.jpg" alt="Leták 5" onerror="this.src='https://placehold.co/400x600/e63946/white?text=Letak+5';">
+                    </div>
+                    <div class="leaflet-item">
+                        <img src="6.jpg" alt="Leták 6" onerror="this.src='https://placehold.co/400x600/f1c40f/333?text=Letak+6';">
+                    </div>
+                    <div class="leaflet-item">
+                        <img src="7.jpg" alt="Leták 7" onerror="this.src='https://placehold.co/400x600/e63946/white?text=Letak+7';">
+                    </div>
+                    <div class="leaflet-item">
+                        <img src="8.jpg" alt="Leták 8" onerror="this.src='https://placehold.co/400x600/f1c40f/333?text=Letak+8';">
+                    </div>
+
+                    <!-- Přidaný kód podle vašeho přání (přesně tak, jak jste poskytl) -->
+                    <div class="leaflet-item">
+                        <a href="https://www.venganza.org"><img src="https://www.venganza.org/images/fsmrof.png" /></a>
+                    </div>
+                </div>
+            </section>
+
+            <section id="svaty-patek">
+                <h2>Svatý Pátek</h2>
+                <p>Náš největší svátek. Každý týden. Protože Bůh byl po stvoření světa unavený, pátek je dnem odpočinku.</p>
+                <div class="card-container">
+                    <div class="modern-card" style="background-color: var(--c-beige); border-bottom-color: var(--c-red);">
+                        <h3><i class="fa-solid fa-mug-hot"></i> Rituál</h3>
+                        <p>Jíme těstoviny. Pijeme pivo (nebo cokoliv, co máme rádi). Jsme v klidu.</p>
+                    </div>
+                    <div class="modern-card" style="background-color: var(--c-beige); border-bottom-color: var(--c-red);">
+                        <h3><i class="fa-regular fa-face-smile-wink"></i> Povinnost</h3>
+                        <p>Jedinou povinností je radost. Neberte práci vážně. Pátek je svoboda.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="afterlife">
+                <h2>Posmrtný život & Hříchy</h2>
+                <h3>Ráj bez hranic</h3>
+                <p>Všichni jdou do nebe. Quob je milující a nikoho netrestá. V nebi na nás čekají <strong>Pivní sopky</strong> (s vaším oblíbeným nápojem) a <strong>Továrny na striptéry/ky</strong> (podle vašeho vkusu).</p>
+                <h3>Vaření se za hříchy</h3>
+                <p>Nemáme peklo. Quob se "vaří" za naše hříchy v Posvátném hrnci. Absorbuje naše viny, aby těstoviny byly měkké a my svobodní. Je to akt čisté sacharidové lásky.</p>
+            </section>
+
+            <div class="noodle-divider"></div>
+
+            <section id="pirati" class="pirate-section">
+                <h2>Božští Piráti</h2>
+                <p>Zapomeňte na hollywoodské filmy. Piráti byli původní Pastafariáni. Mírumilovní průzkumníci, kteří šířili dobrou náladu a čokoládu.</p>
+                <p>Globální oteplování, zemětřesení a hurikány jsou přímým důsledkem úbytku pirátů od roku 1800. Grafy nelžou.</p>
+                <p><strong>Buď Pirátem dneška:</strong> Buď svobodný, tolerantní a měj rád chaos. Arrgh!</p>
+            </section>
+
+            <section id="pravidla">
+                <h2>Osm "Raději bych, kdybys"</h2>
+                <p>Místo přísných přikázání nám Quob dal vlažná doporučení. Mosey (náš pirátský Mojžíš) jich původně nesl deset, ale dvě desky rozbil. Zde je to, co zbylo:</p>
+                
+                <div class="card-container">
+                    <div class="modern-card">
+                        <span class="card-number">1</span>
+                        <p><strong>Nechovej se jako svatoušek.</strong><br>Pokud mi lidé nevěří, nevadí. Nejsem ješitný.</p>
+                    </div>
+                    <div class="modern-card">
+                        <span class="card-number">2</span>
+                        <p><strong>Nepoužívej mě k útlaku.</strong><br>Neubližuj mým jménem. Čistota je pro vodu, ne pro lidi.</p>
+                    </div>
+                    <div class="modern-card">
+                        <span class="card-number">3</span>
+                        <p><strong>Nesoudit.</strong><br>Žena = člověk, muž = člověk. Nikdo není lepší.</p>
+                    </div>
+                    <div class="modern-card">
+                        <span class="card-number">4</span>
+                        <p><strong>Respektuj soukromí.</strong><br>Co dělají dospělí lidé dobrovolně, je jejich věc.</p>
+                    </div>
+                    <div class="modern-card">
+                        <span class="card-number">5</span>
+                        <p><strong>Nejdřív jídlo.</strong><br>Nebojuj s fanatiky na lačný žaludek. Najez se, pak je rozsekej.</p>
+                    </div>
+                    <div class="modern-card">
+                        <span class="card-number">6</span>
+                        <p><strong>Žádné drahé chrámy.</strong><br>Peníze dejte na léky, mír a levnější kabelovku.</p>
+                    </div>
+                    <div class="modern-card">
+                        <span class="card-number">7</span>
+                        <p><strong>Nemluvím s tebou.</strong><br>Nejsi tak zajímavý. Překonej své ego.</p>
+                    </div>
+                    <div class="modern-card">
+                        <span class="card-number">8</span>
+                        <p><strong>Používej ochranu.</strong><br>Chtěl jsem, abyste si to užili. Noste kondom!</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="svatky">
+                <h2>Svátky</h2>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="border-left: 5px solid var(--c-red); padding-left: 1rem;">
+                        <h3>Ramendan</h3>
+                        <p>Jíme jen instantní nudle, abychom si připomněli chudé studenty.</p>
+                    </div>
+                    <div style="border-left: 5px solid var(--c-yellow); padding-left: 1rem;">
+                        <h3>Pastover</h3>
+                        <p>Oslava jarní rovnodennosti a čerstvých bylinek. Přechod k sytosti.</p>
+                    </div>
+                    <div style="border-left: 5px solid var(--c-text); padding-left: 1rem;">
+                        <h3>Mluv jako pirát (19. 9.)</h3>
+                        <p>Náš den. Všichni musí říkat "Arrgh" a nosit pásku přes oko.</p>
+                    </div>
+                    <div style="border-left: 5px solid var(--c-red-dark); padding-left: 1rem;">
+                        <h3>Halloween (31. 10.)</h3>
+                        <p>Den, kdy se celý svět konečně obléká správně – za piráty! Oslavujeme strašidla, přemíru cukru a vzdáváme hold nemrtvým (což je teologicky velmi blízko k zázračnému zmrtvýchvstání).</p>
+                    </div>
+                    <div style="border-left: 5px solid var(--c-red); padding-left: 1rem;">
+                        <h3>Holiday</h3>
+                        <p>Prosinec a leden. Slavíme všechno. Nerozlišujeme. Hlavně že je jídlo.</p>
+                    </div>
+                </div>
+            </section>
+            
+             <section id="modlitby">
+                <h2>Modlitby</h2>
+                <p>Naše liturgie je chutná. Zde je <strong>Modlitba FSM naše</strong>:</p>
+                <div class="exotic-quote" style="font-size: 1.3rem;">
+                    "Ó, Vznešená Létající špagetová příšero, Ty, jenž sídlíš na vrcholku pivní sopky... Dotkni se nás Tvým Noodly appendagem. Buď Tvá omáčka jako v pivním nebi tak i na zemi... Uvař se za naše hříchy. Ramen."
+                </div>
+            </section>
+
+            <div class="noodle-divider"></div>
+
+            <section id="historie">
+                <h2>Pravá historie</h2>
+                <p>Učebnice lžou (nebo jen neznají pravdu). Zde je výběr z naší bohaté historie:</p>
+                <ul>
+                    <li><strong>Stvoření:</strong> FSM vytvořilo svět, "Prime Time" (noc), a trpaslíka.</li>
+                    <li><strong>Olivová zahrada v Edenu:</strong> První hřích nebyl jablko, ale lež o snězených tyčinkách a zlomený zub o olivovou pecku.</li>
+                    <li><strong>Potopa:</strong> Nehoda při vaření. FSM scedilo vodu z velkého Cedníku dobra a omylem spláchlo lidi.</li>
+                    <li><strong>Věž z odpadu (Scrapple):</strong> Lidé stavěli věž zbytků. Smrdělo to, tak to FSM zbouralo.</li>
+                    <li><strong>Exodus z restaurace:</strong> Pirát Mosey vyvedl kuchaře z otroctví manažera Phila. Rudá louže omáčky se rozestoupila.</li>
+                </ul>
+            </section>
+
+            <section id="faq">
+                <h2>FAQ: Často kladené otázky</h2>
+                
+                <details class="faq-item">
+                    <summary class="faq-summary">Vznik pastafariánství</summary>
+                    <div class="faq-answer">
+                        <p>Vše začalo v roce 2005 jako satirická obrana proti výuce kreacionismu na amerických školách. Zakladatel Bobby Henderson tehdy školní radě napsal otevřený dopis s jednoduchým požadavkem: pokud se má ve školách učit o stvoření světa vyšší mocí, musí se vyučovat i verze s Létající špagetovou příšerou.</p>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">Konzumace špaget</summary>
+                    <div class="faq-answer">
+                        <p>Jíst špagety není jen povoleno, je to přímo aktivně podporováno. Jakožto posvátný symbol Létající špagetové příšery jsou totiž nedílnou – a velmi chutnou – součástí našich rituálů i oslav.</p>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">Jak se stát členem</summary>
+                    <div class="faq-answer">
+                        <p>Je to jednodušší, než byste čekali. Nepotřebujete žádné formuláře ani formální obřady. Stačí otevřená mysl, smysl pro humor a láska ke špagetám či svobodě myšlení. Pastafariánství není o byrokracii, ale o sdílení hodnot a oslavě života s nadhledem.</p>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">Svaté texty</summary>
+                    <div class="faq-answer">
+                        <p>Ano, uctíváme hned dvě zásadní díla. Evangelium Létající špagetové příšery s humorem popisuje stvoření světa i naše dějiny, zatímco Loose Canon slouží jako volná sbírka pastafariánských myšlenek a příběhů.</p>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">Sňatky stejného pohlaví</summary>
+                    <div class="faq-answer">
+                        <p>Létající špagetová příšera je bytostí lásky a inkluze, takže diskriminaci u nás nehledejte. Plně podporujeme rovnost a sňatky všech zamilovaných bez rozdílu. Pro FSM je důležitá upřímná láska a oddanost, nikoliv pohlaví – na naší nebeské párty se slaví city ve všech jejich formách.</p>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">Existuje u vás kněžství?</summary>
+                    <div class="faq-answer">
+                        <p>Na formální hierarchii si nehrajeme – v jistém smyslu je u nás knězem každý sám sobě. Kdo ale touží po oficiálním razítku, může se stát „Pastafariánským ministrem“. Za poplatek 59 USD (cca 1 455 Kč) získáte na oficiálním webu certifikát a balíček rekvizit. Není to povinnost, spíše fajn způsob, jak se pobavit a podpořit dobrou věc.</p>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">Vznik vesmíru</summary>
+                    <div class="faq-answer">
+                        <p>Podle naší legendy za to může jeden divoký večírek. Létající špagetová příšera se v den stvoření opila a vesmír vyvrhla v podstatě omylem. Hvězdy, planety i galaxie se jednoduše vysypaly z jejího Nudlového chapadla, což dodnes vysvětluje, proč je náš svět tak fascinující a dokonale chaotický.</p>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">Máte nějaká dogmata?</summary>
+                    <div class="faq-answer">
+                        <p>Slepou poslušnost a přísná pravidla u nás nehledejte. Místo toho sázíme na kritické myšlení, humor a svobodu. Vlastně uznáváme jen jediné „dogma“, a to zní zcela jasně: „Odmítej dogma!“</p>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">Proč vás neuznávají?</summary>
+                    <div class="faq-answer">
+                        <p>Odpověď je asi prostá. Těchto lidí se pravděpodobně zatím nedotklo Nudlové chapadlo Létající špagetové příšery. Kdo ten dotek nezažil, ten nás holt zatím nepochopil.</p>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">Proč existuje zlo a smrt?</summary>
+                    <div class="faq-answer">
+                        <p>FSM je sice mírumilovná, ale nezapomínejme, že vesmír stvořila v těžké opilosti. Svět je proto logicky trochu chaotický – podobně jako když rozverné dítě s dobrým úmyslem nechtěně způsobí spoušť. Zlo tedy není zlý záměr, ale spíše vedlejší produkt této „vesmírné nedokonalosti“. Je na nás, abychom se v tom zmatku naučili chodit a šířili dobro.</p>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">Pokrývka hlavy</summary>
+                    <div class="faq-answer">
+                        <p>Ano, naší ikonickou pokrývkou hlavy je cedník. Nosíme ho hrdě jako symbol víry a vyjádření úcty k Létajícímu špagetovému monstru. Co je pro jiné jen kuchyňské náčiní, je pro nás posvátnou korunou.</p>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">Máte nějaké svátky?</summary>
+                    <div class="faq-answer">
+                        <p>Samozřejmě, a jsou výborné! Máme například Ramendan, kdy si připomínáme studentská léta a konzumujeme pouze instantní nudle. Místo Vánoc pak slavíme Holiday – neurčité, ale veselé svátky klidu, jídla a pirátské pohody. U nás se prostě slaví s chutí a bez stresu.</p>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">Proč bojujete o fotku s cedníkem v dokladech?</summary>
+                    <div class="faq-answer">
+                        <p>Jde o princip rovnosti. Pokud mají jiné víry právo mít na úředních fotkách pokrývku hlavy, musíme mít stejné právo i my. Cedník v řidičáku není jen módní výstřelek, ale důkaz, že svoboda vyznání platí buď pro všechny stejně, nebo pro nikoho.</p>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">Je to satira, nebo v to fakt věříte?</summary>
+                    <div class="faq-answer">
+                        <p>Je to pestré jako talíř těstovin. Zatímco většina z nás to bere jako geniální satiru, komunitní zábavu a obranu vědy, najdou se i tací, kteří v Létající špagetovou příšeru věří upřímně a doslova. Hranice mezi hlubokou vírou a dobrým vtipem je u nás tenká jako vlasové nudle.</p>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">A co celiaci? Půjdou do pekla?</summary>
+                    <div class="faq-answer">
+                        <p>Vůbec ne, nebe je pro všechny! Létající špagetová příšera se uvařila za hříchy úplně každého, bez ohledu na dietní omezení. Do našeho ráje (vybaveného pivní sopkou a továrnou na striptérky/striptéry) jsou srdečně zváni i celiaci. Na věčnosti vás lepek trápit nebude.</p>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">Proč se oblékáte jako piráti?</summary>
+                    <div class="faq-answer">
+                        <p>Piráti jsou naši svatí předci! Zapomeňte na lži o hrdlořezech. Původní piráti byli mírumilovní průzkumníci a šiřitelé dobré vůle (a sladkostí), které očernila historická propaganda. Navíc máme nezvratný vědecký důkaz: globální oteplování je přímo úměrné úbytku pirátů na světě. Čím méně pirátů, tím vyšší teploty. Chceme zachránit planetu? Musíme se vrátit k pirátství!</p>
+                    </div>
+                </details>
+            </section>
+
+<section id="weby">
+    <h2>Webové stránky</h2>
+    <p class="lead">Doporučené oficiální i komunitní zdroje pastafariánství z celého světa.</p>
+
+    <div class="card-container">
+
+        <a href="https://www.spaghettimonster.org" target="_blank" style="text-decoration:none;color:inherit;">
+            <div class="modern-card">
+                <div class="card-icon-large" style="color:var(--c-red);">
+                    <i class="fa-solid fa-globe"></i>
+                </div>
+                <h3 style="text-align:center;margin-top:0;">spaghettimonster.org</h3>
+                <p style="text-align:center;">Oficiální domov Létající špagetové příšery.</p>
+            </div>
+        </a>
+
+        <a href="https://www.loose-canon.info" target="_blank" style="text-decoration:none;color:inherit;">
+            <div class="modern-card">
+                <div class="card-icon-large" style="color:var(--c-yellow);">
+                    <i class="fa-solid fa-scroll"></i>
+                </div>
+                <h3 style="text-align:center;margin-top:0;">loose-canon.info</h3>
+                <p style="text-align:center;">Loose Canon a další svaté texty.</p>
+            </div>
+        </a>
+
+        <a href="https://www.pastafarianstvi.cz" target="_blank" style="text-decoration:none;color:inherit;">
+            <div class="modern-card">
+                <div class="card-icon-large" style="color:var(--c-red);">
+                    <i class="fa-solid fa-flag"></i>
+                </div>
+                <h3 style="text-align:center;margin-top:0;">pastafarianstvi.cz</h3>
+                <p style="text-align:center;">Český pastafariánský web.</p>
+            </div>
+        </a>
+
+        <a href="https://pastafariani.webnode.cz" target="_blank" style="text-decoration:none;color:inherit;">
+            <div class="modern-card">
+                <div class="card-icon-large" style="color:var(--c-text);">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <h3 style="text-align:center;margin-top:0;">pastafariani.webnode.cz</h3>
+                <p style="text-align:center;">Komunitní český projekt.</p>
+            </div>
+        </a>
+
+        <a href="https://www.pastafarian.co.uk" target="_blank" style="text-decoration:none;color:inherit;">
+            <div class="modern-card">
+                <div class="card-icon-large" style="color:var(--c-yellow);">
+                    <i class="fa-solid fa-crown"></i>
+                </div>
+                <h3 style="text-align:center;margin-top:0;">pastafarian.co.uk</h3>
+                <p style="text-align:center;">Britská pastafariánská církev.</p>
+            </div>
+        </a>
+
+        <a href="https://www.klps.pl" target="_blank" style="text-decoration:none;color:inherit;">
+            <div class="modern-card">
+                <div class="card-icon-large" style="color:var(--c-red);">
+                    <i class="fa-solid fa-anchor"></i>
+                </div>
+                <h3 style="text-align:center;margin-top:0;">klps.pl</h3>
+                <p style="text-align:center;">Polská pastafariánská komunita.</p>
+            </div>
+        </a>
+
+        <a href="https://www.pastafariancalendar.com" target="_blank" style="text-decoration:none;color:inherit;">
+            <div class="modern-card">
+                <div class="card-icon-large" style="color:var(--c-text);">
+                    <i class="fa-solid fa-calendar-days"></i>
+                </div>
+                <h3 style="text-align:center;margin-top:0;">pastafariancalendar.com</h3>
+                <p style="text-align:center;">Pastafariánský kalendář svátků.</p>
+            </div>
+        </a>
+
+    </div>
+</section>
+            <section id="clenstvi">
+                <div class="modern-card" style="background: var(--c-yellow); color: var(--c-text); border: none;">
+                    <h2>Jak se stát členem?</h2>
+                    <p style="font-size: 1.2rem; font-weight: bold;">Prostě to chtěj.</p>
+                    <p>To je vše. Žádné formuláře. Pokud cítíš lásku k těstovinám a toleranci, jsi náš. Vítejte v rodině Bouba FSM.</p>
+                    <hr style="border: 1px solid rgba(0,0,0,0.1); margin: 2rem 0;">
+                    <h3>Kněžství</h3>
+                    <p>Cítíš povolání? Můžeš se stát oficiálním ministrem, oddávat a křtít v omáčce. Insignie a certifikáty jsou k dispozici pro ty, kdo to myslí vážně (a mají 59 USD).</p>
+                </div>
+            </section>
+
+            <footer class="footer-simple">
+                <p>© 2025 Bouba FSM | Společnost Létající špagetové příšery</p>
+                <p>Vytvořeno s láskou, sacharidy a špetkou chaosu. RAmen.</p>
+            </footer>
+
+        </main>
+    </div>
+
+    <script>
+        // Toggle menu pro mobily
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // Scroll Reveal Animation
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        const revealSection = () => {
+            const triggerBottom = window.innerHeight * 0.8;
+            sections.forEach(section => {
+                const sectionTop = section.getBoundingClientRect().top;
+                if (sectionTop < triggerBottom) {
+                    section.classList.add('visible');
+                }
+            });
+        }
+
+        // Active Link Highlighting (Scroll Spy)
+        const highlightNav = () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= (sectionTop - sectionHeight / 3)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', () => {
+            revealSection();
+            highlightNav();
+        });
+
+        // Spustit jednou při načtení
+        revealSection();
+    </script>
+</body>
+</html>
